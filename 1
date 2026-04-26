@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucky Draw System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #D4A843;
+    --gold-light: #F5D78E;
+    --gold-dark: #8B6914;
+    --deep: #0A0A12;
+    --deep2: #12121E;
+    --deep3: #1A1A2E;
+    --surface: #1E1E30;
+    --surface2: #252540;
+    --border: rgba(212,168,67,0.2);
+    --border-bright: rgba(212,168,67,0.5);
+    --text: #F0EBE0;
+    --text-muted: rgba(240,235,224,0.5);
+    --red: #E05050;
+    --green: #50C878;
+    --blue: #5080E0;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ─── NAV ─── */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    background: var(--deep2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-logo .star { font-size: 22px; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    background: none;
+    color: var(--text-muted);
+  }
+  .nav-tab.active {
+    background: var(--surface);
+    border-color: var(--border-bright);
+    color: var(--gold);
+  }
+  .nav-tab:hover:not(.active) { color: var(--text); background: var(--surface); }
+  .display-link {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: var(--deep);
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+  }
+  .display-link:hover { opacity: 0.85; }
+
+  /* ─── PAGES ─── */
+  .page { display: none; padding: 32px; max-width: 1100px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* ─── SECTION HEADINGS ─── */
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--gold);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* ─── FORM ELEMENTS ─── */
+  .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+  label { font-size: 13px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+  input[type="text"], input[type="number"], input[type="email"] {
+    background: var(--deep2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--gold); }
+  input::placeholder { color: var(--text-muted); }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    border-color: var(--gold);
+    color: var(--deep);
+  }
+  .btn-gold:hover { opacity: 0.85; }
+  .btn-outline {
+    background: transparent;
+    border-color: var(--border-bright);
+    color: var(--text);
+  }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-danger {
+    background: transparent;
+    border-color: rgba(224,80,80,0.4);
+    color: var(--red);
+  }
+  .btn-danger:hover { background: rgba(224,80,80,0.1); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ─── PARTICIPANTS TABLE ─── */
+  .participants-table { width: 100%; border-collapse: collapse; }
+  .participants-table th {
+    text-align: left;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .participants-table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(212,168,67,0.08);
+    font-size: 14px;
+  }
+  .participants-table tr:last-child td { border-bottom: none; }
+  .participants-table tr:hover td { background: var(--surface2); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .badge-won { background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid var(--border-bright); }
+  .badge-pending { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* ─── PRIZES ─── */
+  .prizes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .prize-card {
+    background: var(--deep2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+  }
+  .prize-card.assigned { border-color: rgba(80,200,120,0.3); }
+  .prize-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .prize-winner { font-size: 12px; color: var(--green); margin-top: 8px; }
+  .prize-unassigned { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+  .prize-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+  /* ─── STATS ROW ─── */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 700; color: var(--gold); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ─── DRAW PAGE ─── */
+  #draw-page { text-align: center; }
+  .draw-arena {
+    background: radial-gradient(ellipse at center, var(--surface2) 0%, var(--deep2) 70%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 60px 40px;
+    margin: 32px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .draw-arena::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(transparent 0deg, rgba(212,168,67,0.03) 180deg, transparent 360deg);
+    animation: spin 20s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .draw-prize-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .draw-prize-name { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; color: var(--gold); margin-bottom: 40px; }
+  .slot-machine {
+    width: 320px;
+    height: 80px;
+    margin: 0 auto 40px;
+    background: var(--deep);
+    border: 2px solid var(--border-bright);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .slot-track {
+    position: absolute;
+    width: 100%;
+    transition: none;
+    text-align: center;
+  }
+  .slot-item {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .slot-item.highlight { color: var(--gold); }
+  .draw-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 18px 56px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light), var(--gold));
+    background-size: 300% 300%;
+    animation: goldShift 4s ease infinite;
+    border: none;
+    color: var(--deep);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 0 30px rgba(212,168,67,0.3);
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes goldShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .draw-btn:hover { transform: scale(1.03); box-shadow: 0 0 50px rgba(212,168,67,0.5); }
+  .draw-btn:active { transform: scale(0.98); }
+  .draw-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Winner Announcement */
+  .winner-announcement {
+    display: none;
+    margin-top: 32px;
+    padding: 32px;
+    background: var(--surface2);
+    border: 2px solid var(--gold);
+    border-radius: 16px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .winner-announcement.show { display: block; }
+  .winner-crown { font-size: 48px; margin-bottom: 12px; }
+  .winner-name { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 800; color: var(--gold); }
+  .winner-prize { font-size: 16px; color: var(--text-muted); margin-top: 8px; }
+  .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    opacity: 0;
+    animation: fall 3s ease-out forwards;
+  }
+  @keyframes fall {
+    0%   { opacity: 1; top: -10px; transform: rotate(0deg); }
+    100% { opacity: 0; top: 110vh; transform: rotate(720deg); }
+  }
+
+  /* ─── DISPLAY PAGE (mobile/tablet fullscreen) ─── */
+  #display-page {
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 0%, #1A1A2E 0%, #0A0A12 60%);
+    padding: 40px 24px;
+    text-align: center;
+  }
+  #display-page.active { display: flex; }
+  .display-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+  }
+  .display-globe {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--gold-light), var(--gold-dark), #3A2800);
+    margin: 0 auto 40px;
+    box-shadow: 0 0 60px rgba(212,168,67,0.4), inset 0 -10px 30px rgba(0,0,0,0.4);
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 60px rgba(212,168,67,0.4), inset 0 -10px 30px rgba(0,0,0,0.4); }
+    50%       { box-shadow: 0 0 100px rgba(212,168,67,0.6), inset 0 -10px 30px rgba(0,0,0,0.4); }
+  }
+  .display-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 8vw, 64px);
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .display-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 48px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .display-current-prize {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 16px;
+    padding: 20px 40px;
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .display-prize-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 6px; }
+  .display-prize-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; color: var(--text); }
+  .display-slot {
+    width: 100%;
+    max-width: 480px;
+    height: 88px;
+    background: var(--deep);
+    border: 2px solid var(--border-bright);
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 40px;
+  }
+  .display-slot-track { position: absolute; width: 100%; text-align: center; transition: none; }
+  .display-slot-item {
+    height: 88px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(18px, 4vw, 26px);
+    font-weight: 700;
+    color: var(--text);
+  }
+  .display-slot-item.highlight { color: var(--gold); }
+  .display-draw-btn {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(16px, 4vw, 22px);
+    font-weight: 800;
+    padding: 20px 64px;
+    border-radius: 60px;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light), var(--gold));
+    background-size: 300% 300%;
+    animation: goldShift 4s ease infinite;
+    border: none;
+    color: var(--deep);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 0 40px rgba(212,168,67,0.5);
+    transition: transform 0.1s;
+    touch-action: manipulation;
+  }
+  .display-draw-btn:hover { transform: scale(1.04); }
+  .display-draw-btn:active { transform: scale(0.97); }
+  .display-draw-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+  .display-winner-wrap {
+    width: 100%;
+    max-width: 480px;
+    display: none;
+    margin-top: 32px;
+    padding: 32px;
+    background: var(--surface);
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .display-winner-wrap.show { display: block; }
+  .display-status { font-size: 13px; color: var(--text-muted); margin-top: 20px; }
+
+  /* ─── RESULTS LOG ─── */
+  .results-log { max-height: 300px; overflow-y: auto; }
+  .results-log::-webkit-scrollbar { width: 4px; }
+  .results-log::-webkit-scrollbar-track { background: var(--deep); }
+  .results-log::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+  .log-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(212,168,67,0.08);
+    font-size: 14px;
+  }
+  .log-item:last-child { border-bottom: none; }
+  .log-rank {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    animation: slideUp 0.3s ease;
+    max-width: 320px;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .toast-success { background: rgba(80,200,120,0.15); border: 1px solid rgba(80,200,120,0.4); color: var(--green); }
+  .toast-error   { background: rgba(224,80,80,0.15); border: 1px solid rgba(224,80,80,0.4); color: var(--red); }
+  .toast-info    { background: rgba(212,168,67,0.1); border: 1px solid var(--border-bright); color: var(--gold); }
+
+  /* scroll bar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--deep); }
+  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .nav { padding: 12px 16px; }
+    .page { padding: 20px 16px; }
+    .form-row { flex-direction: column; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav" id="main-nav">
+  <div class="nav-logo">
+    <span class="star">✦</span> LuckyDraw
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('admin')">Admin</button>
+    <button class="nav-tab" onclick="showPage('draw')">Draw</button>
+    <button class="nav-tab" onclick="showPage('results')">Results</button>
+  </div>
+  <button class="display-link" onclick="openDisplay()">📺 Display View</button>
+</nav>
+
+<!-- ═══════════════ ADMIN PAGE ═══════════════ -->
+<div class="page active" id="admin-page">
+
+  <div class="stats-row" id="stats-row">
+    <div class="stat-box"><div class="stat-num" id="stat-participants">0</div><div class="stat-label">Participants</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-prizes">0</div><div class="stat-label">Prizes</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-drawn">0</div><div class="stat-label">Drawn</div></div>
+    <div class="stat-box"><div class="stat-num" id="stat-remaining">0</div><div class="stat-label">Remaining</div></div>
+  </div>
+
+  <!-- Add Participant -->
+  <div class="card">
+    <div class="section-title">Add Participant</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="p-name" placeholder="e.g. Rahul Sharma" />
+      </div>
+      <div class="form-group">
+        <label>Phone / ID</label>
+        <input type="text" id="p-id" placeholder="e.g. +91 98765 43210" />
+      </div>
+      <div class="form-group">
+        <label>Ticket #</label>
+        <input type="text" id="p-ticket" placeholder="e.g. TK-001" />
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-gold" onclick="addParticipant()">+ Add</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('csv-import').click()">📥 Import CSV</button>
+      <input type="file" id="csv-import" accept=".csv" style="display:none" onchange="importCSV(event)">
+      <button class="btn btn-danger btn-sm" onclick="clearAllParticipants()">🗑 Clear All</button>
+    </div>
+  </div>
+
+  <!-- Participants List -->
+  <div class="card">
+    <div class="section-title">Participants</div>
+    <div style="overflow-x:auto;">
+      <table class="participants-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Name</th><th>Phone / ID</th><th>Ticket</th><th>Status</th><th>Prize Won</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="participants-tbody">
+          <tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div>No participants yet. Add some above.</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Prize -->
+  <div class="card">
+    <div class="section-title">Prizes</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Prize Name</label>
+        <input type="text" id="prize-name" placeholder="e.g. iPhone 15 Pro" />
+      </div>
+      <div class="form-group" style="max-width:120px;">
+        <label>Quantity</label>
+        <input type="number" id="prize-qty" placeholder="1" min="1" value="1" />
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-gold" onclick="addPrize()">+ Add Prize</button>
+      </div>
+    </div>
+    <div class="prizes-grid" id="prizes-grid">
+      <div style="grid-column:1/-1;color:var(--text-muted);font-size:14px;padding:16px 0;">No prizes added yet.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ DRAW PAGE ═══════════════ -->
+<div class="page" id="draw-page">
+  <div class="section-title">Lucky Draw</div>
+
+  <div class="card" style="padding:16px 24px;">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div>
+        <label style="font-size:11px;">Select Prize to Draw</label>
+        <select id="draw-prize-select" style="display:block;margin-top:6px;background:var(--deep2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;min-width:240px;">
+          <option value="">— Choose Prize —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="draw-arena">
+    <div class="draw-prize-label">Drawing For</div>
+    <div class="draw-prize-name" id="draw-prize-display">Select a prize above</div>
+
+    <div class="slot-machine">
+      <div class="slot-track" id="slot-track">
+        <div class="slot-item">— Ready —</div>
+      </div>
+    </div>
+
+    <button class="draw-btn" id="draw-btn" onclick="performDraw()" disabled>✦ DRAW ✦</button>
+  </div>
+
+  <div class="winner-announcement" id="winner-announcement">
+    <div class="winner-crown">🏆</div>
+    <div class="winner-name" id="winner-name-display">—</div>
+    <div class="winner-prize" id="winner-prize-display">—</div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="dismissWinner()">Continue to Next Draw</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ RESULTS PAGE ═══════════════ -->
+<div class="page" id="results-page">
+  <div class="section-title">Draw Results</div>
+  <div class="card">
+    <div class="results-log" id="results-log">
+      <div class="empty-state"><div class="empty-icon">🎯</div>No draws conducted yet.</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;">
+    <button class="btn btn-outline" onclick="exportResults()">📤 Export Results</button>
+    <button class="btn btn-danger" onclick="resetAllDraws()">🔄 Reset All Draws</button>
+  </div>
+</div>
+
+<!-- ═══════════════ DISPLAY PAGE (fullscreen) ═══════════════ -->
+<div id="display-page">
+  <div class="display-logo">✦ Lucky Draw ✦</div>
+  <div class="display-globe"></div>
+  <div class="display-title">Lucky Draw</div>
+  <div class="display-subtitle">Stand by for your moment of fortune</div>
+
+  <div class="display-current-prize" id="display-current-prize">
+    <div class="display-prize-label">Current Prize</div>
+    <div class="display-prize-value" id="display-prize-value">Awaiting selection…</div>
+  </div>
+
+  <div class="display-slot" id="display-slot">
+    <div class="display-slot-track" id="display-slot-track">
+      <div class="display-slot-item">— Ready —</div>
+    </div>
+  </div>
+
+  <button class="display-draw-btn" id="display-draw-btn" onclick="displayDraw()">
+    ✦ TAP TO DRAW ✦
+  </button>
+
+  <div class="display-winner-wrap" id="display-winner-wrap">
+    <div style="font-size:40px;margin-bottom:8px;">🏆</div>
+    <div style="font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,36px);font-weight:800;color:var(--gold);" id="display-winner-name">—</div>
+    <div style="font-size:14px;color:var(--text-muted);margin-top:8px;" id="display-winner-prize">—</div>
+  </div>
+
+  <div class="display-status" id="display-status">Sync: Active</div>
+  <button class="btn btn-outline" style="margin-top:24px;font-size:12px;" onclick="closeDisplay()">← Admin</button>
+</div>
+
+<div class="confetti-container" id="confetti-container"></div>
+
+<script>
+// ─── STATE ───
+let state = {
+  participants: [],
+  prizes: [],
+  results: []
+};
+
+// Shared "server" key using localStorage to sync between admin and display views
+const STORAGE_KEY = 'luckydraw_v2_state';
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function loadState() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (s) state = JSON.parse(s);
+  } catch(e) {}
+}
+
+// Poll for state changes (simulates server sync)
+setInterval(() => {
+  const isDisplay = document.getElementById('display-page').classList.contains('active');
+  if (isDisplay) {
+    loadState();
+    updateDisplayPage();
+  }
+}, 1500);
+
+// ─── NAVIGATION ───
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name + '-page').classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  const names = ['admin','draw','results'];
+  const idx = names.indexOf(name);
+  if (idx >= 0) tabs[idx].classList.add('active');
+  if (name === 'draw') refreshDrawSelect();
+  if (name === 'results') renderResults();
+  if (name === 'admin') renderAll();
+}
+
+function openDisplay() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('main-nav').style.display = 'none';
+  document.getElementById('display-page').classList.add('active');
+  updateDisplayPage();
+}
+function closeDisplay() {
+  document.getElementById('display-page').classList.remove('active');
+  document.getElementById('main-nav').style.display = 'flex';
+  showPage('admin');
+}
+
+// ─── PARTICIPANTS ───
+function addParticipant() {
+  const name = document.getElementById('p-name').value.trim();
+  const id   = document.getElementById('p-id').value.trim();
+  const ticket = document.getElementById('p-ticket').value.trim();
+  if (!name) { toast('Please enter participant name.', 'error'); return; }
+  state.participants.push({ id: Date.now(), name, phone: id, ticket, prizeWon: null });
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-id').value = '';
+  document.getElementById('p-ticket').value = '';
+  saveState();
+  renderAll();
+  toast(`${name} added!`, 'success');
+}
+
+function removeParticipant(id) {
+  state.participants = state.participants.filter(p => p.id !== id);
+  saveState();
+  renderAll();
+}
+
+function clearAllParticipants() {
+  if (!confirm('Remove all participants? This cannot be undone.')) return;
+  state.participants = [];
+  saveState();
+  renderAll();
+}
+
+function importCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const lines = evt.target.result.split('\n').filter(l => l.trim());
+    let added = 0;
+    lines.forEach((line, i) => {
+      if (i === 0 && line.toLowerCase().includes('name')) return; // skip header
+      const parts = line.split(',').map(p => p.trim().replace(/^["']|["']$/g,''));
+      if (parts[0]) {
+        state.participants.push({ id: Date.now() + i, name: parts[0], phone: parts[1]||'', ticket: parts[2]||'', prizeWon: null });
+        added++;
+      }
+    });
+    saveState();
+    renderAll();
+    toast(`${added} participants imported!`, 'success');
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function renderParticipants() {
+  const tbody = document.getElementById('participants-tbody');
+  if (!state.participants.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div>No participants yet. Add some above.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.participants.map((p, i) => `
+    <tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td style="font-weight:500">${esc(p.name)}</td>
+      <td style="color:var(--text-muted)">${esc(p.phone||'—')}</td>
+      <td style="color:var(--text-muted)">${esc(p.ticket||'—')}</td>
+      <td><span class="badge ${p.prizeWon ? 'badge-won' : 'badge-pending'}">${p.prizeWon ? 'Won' : 'Pending'}</span></td>
+      <td style="color:var(--gold)">${p.prizeWon ? esc(p.prizeWon) : '—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="removeParticipant(${p.id})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+// ─── PRIZES ───
+function addPrize() {
+  const name = document.getElementById('prize-name').value.trim();
+  const qty  = parseInt(document.getElementById('prize-qty').value) || 1;
+  if (!name) { toast('Please enter prize name.', 'error'); return; }
+  for (let i = 0; i < qty; i++) {
+    state.prizes.push({ id: Date.now() + i, name, winner: null, winnerName: null });
+  }
+  document.getElementById('prize-name').value = '';
+  document.getElementById('prize-qty').value = '1';
+  saveState();
+  renderAll();
+  toast(`${qty}x "${name}" prize(s) added!`, 'success');
+}
+
+function removePrize(id) {
+  state.prizes = state.prizes.filter(p => p.id !== id);
+  saveState();
+  renderAll();
+}
+
+function renderPrizes() {
+  const grid = document.getElementById('prizes-grid');
+  if (!state.prizes.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:var(--text-muted);font-size:14px;padding:16px 0;">No prizes added yet.</div>';
+    return;
+  }
+  grid.innerHTML = state.prizes.map(p => `
+    <div class="prize-card ${p.winner ? 'assigned' : ''}">
+      <div class="prize-name">${esc(p.name)}</div>
+      ${p.winner ? `<div class="prize-winner">✓ ${esc(p.winnerName)}</div>` : '<div class="prize-unassigned">Available</div>'}
+      <div class="prize-actions">
+        ${!p.winner ? `<button class="btn btn-danger btn-sm" onclick="removePrize(${p.id})">Remove</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ─── STATS ───
+function renderStats() {
+  const drawn = state.prizes.filter(p => p.winner).length;
+  document.getElementById('stat-participants').textContent = state.participants.length;
+  document.getElementById('stat-prizes').textContent = state.prizes.length;
+  document.getElementById('stat-drawn').textContent = drawn;
+  document.getElementById('stat-remaining').textContent = state.prizes.length - drawn;
+}
+
+function renderAll() {
+  renderParticipants();
+  renderPrizes();
+  renderStats();
+}
+
+// ─── DRAW SELECT ───
+function refreshDrawSelect() {
+  loadState();
+  const sel = document.getElementById('draw-prize-select');
+  const available = state.prizes.filter(p => !p.winner);
+  sel.innerHTML = '<option value="">— Choose Prize —</option>' +
+    available.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  updateDrawUI();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderAll();
+  document.getElementById('draw-prize-select')?.addEventListener('change', updateDrawUI);
+});
+
+function updateDrawUI() {
+  const sel = document.getElementById('draw-prize-select');
+  const id = parseInt(sel.value);
+  const prize = state.prizes.find(p => p.id === id);
+  const display = document.getElementById('draw-prize-display');
+  const btn = document.getElementById('draw-btn');
+  if (prize) {
+    display.textContent = prize.name;
+    btn.disabled = false;
+  } else {
+    display.textContent = 'Select a prize above';
+    btn.disabled = true;
+  }
+}
+
+// ─── DRAW ENGINE ───
+let isDrawing = false;
+function performDraw() {
+  if (isDrawing) return;
+  loadState();
+  const sel = document.getElementById('draw-prize-select');
+  const prizeId = parseInt(sel.value);
+  const prize = state.prizes.find(p => p.id === prizeId && !p.winner);
+  if (!prize) { toast('Please select a valid prize.', 'error'); return; }
+
+  const eligible = state.participants.filter(p => !p.prizeWon);
+  if (!eligible.length) { toast('No eligible participants left!', 'error'); return; }
+
+  isDrawing = true;
+  document.getElementById('draw-btn').disabled = true;
+  document.getElementById('winner-announcement').classList.remove('show');
+  animateSlot('slot-track', eligible, () => {
+    const winner = eligible[Math.floor(Math.random() * eligible.length)];
+    finalizeWinner(winner, prize);
+    showWinnerAdmin(winner, prize);
+    isDrawing = false;
+    document.getElementById('draw-btn').disabled = false;
+    refreshDrawSelect();
+  });
+}
+
+function finalizeWinner(winner, prize) {
+  const pIdx = state.participants.findIndex(p => p.id === winner.id);
+  if (pIdx >= 0) state.participants[pIdx].prizeWon = prize.name;
+  const prIdx = state.prizes.findIndex(p => p.id === prize.id);
+  if (prIdx >= 0) { state.prizes[prIdx].winner = winner.id; state.prizes[prIdx].winnerName = winner.name; }
+  state.results.push({ winnerName: winner.name, prizeName: prize.name, ticket: winner.ticket, time: new Date().toLocaleTimeString() });
+  saveState();
+  renderAll();
+}
+
+function showWinnerAdmin(winner, prize) {
+  document.getElementById('winner-name-display').textContent = winner.name;
+  document.getElementById('winner-prize-display').textContent = `🏆 Won: ${prize.name}`;
+  document.getElementById('winner-announcement').classList.add('show');
+  fireConfetti();
+}
+
+function dismissWinner() {
+  document.getElementById('winner-announcement').classList.remove('show');
+  refreshDrawSelect();
+}
+
+// ─── DISPLAY PAGE DRAW ───
+let displayDrawing = false;
+function displayDraw() {
+  if (displayDrawing) return;
+  loadState();
+  // find first undrawn prize
+  const prize = state.prizes.find(p => !p.winner);
+  if (!prize) { toast('All prizes have been drawn!', 'info'); return; }
+  const eligible = state.participants.filter(p => !p.prizeWon);
+  if (!eligible.length) { toast('No eligible participants!', 'error'); return; }
+
+  displayDrawing = true;
+  document.getElementById('display-draw-btn').disabled = true;
+  document.getElementById('display-winner-wrap').classList.remove('show');
+  document.getElementById('display-prize-value').textContent = prize.name;
+
+  animateSlot('display-slot-track', eligible, () => {
+    const winner = eligible[Math.floor(Math.random() * eligible.length)];
+    finalizeWinner(winner, prize);
+    document.getElementById('display-winner-name').textContent = winner.name;
+    document.getElementById('display-winner-prize').textContent = '🏆 Won: ' + prize.name;
+    document.getElementById('display-winner-wrap').classList.add('show');
+    fireConfetti();
+    displayDrawing = false;
+    document.getElementById('display-draw-btn').disabled = false;
+    updateDisplayPage();
+    saveState();
+  });
+}
+
+function updateDisplayPage() {
+  const prize = state.prizes.find(p => !p.winner);
+  const el = document.getElementById('display-prize-value');
+  if (el) el.textContent = prize ? prize.name : 'All prizes drawn!';
+  const btn = document.getElementById('display-draw-btn');
+  if (btn) btn.disabled = !prize || !state.participants.filter(p => !p.prizeWon).length;
+}
+
+// ─── SLOT ANIMATION ───
+function animateSlot(trackId, participants, onDone) {
+  const track = document.getElementById(trackId);
+  let step = 0;
+  const total = 40 + Math.floor(Math.random() * 20);
+  const itemH = trackId.startsWith('display') ? 88 : 80;
+
+  function tick() {
+    const p = participants[step % participants.length];
+    track.innerHTML = `<div class="${trackId.startsWith('display') ? 'display-slot-item' : 'slot-item'} highlight">${esc(p.name)}</div>`;
+    track.style.transform = 'translateY(0)';
+    step++;
+    const delay = step < total * 0.5 ? 50 : step < total * 0.8 ? 80 : 130;
+    if (step < total) {
+      setTimeout(tick, delay);
+    } else {
+      setTimeout(onDone, 300);
+    }
+  }
+  tick();
+}
+
+// ─── RESULTS ───
+function renderResults() {
+  loadState();
+  const log = document.getElementById('results-log');
+  if (!state.results.length) {
+    log.innerHTML = '<div class="empty-state"><div class="empty-icon">🎯</div>No draws conducted yet.</div>';
+    return;
+  }
+  log.innerHTML = state.results.map((r, i) => `
+    <div class="log-item">
+      <div class="log-rank">${i+1}</div>
+      <div style="flex:1">
+        <span style="font-weight:500">${esc(r.winnerName)}</span>
+        <span style="color:var(--text-muted)"> · Ticket ${esc(r.ticket||'—')}</span>
+      </div>
+      <div style="color:var(--gold)">${esc(r.prizeName)}</div>
+      <div style="color:var(--text-muted);font-size:12px;margin-left:8px">${r.time}</div>
+    </div>
+  `).join('');
+}
+
+function exportResults() {
+  if (!state.results.length) { toast('No results to export.', 'error'); return; }
+  const csv = ['#,Winner,Ticket,Prize,Time',
+    ...state.results.map((r,i) => `${i+1},"${r.winnerName}","${r.ticket||''}","${r.prizeName}","${r.time}"`)
+  ].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'lucky-draw-results.csv';
+  a.click();
+  toast('Results exported!', 'success');
+}
+
+function resetAllDraws() {
+  if (!confirm('Reset all draw results? Participants and prizes will be reset.')) return;
+  state.participants.forEach(p => p.prizeWon = null);
+  state.prizes.forEach(p => { p.winner = null; p.winnerName = null; });
+  state.results = [];
+  saveState();
+  renderAll();
+  renderResults();
+  toast('All draws reset.', 'info');
+}
+
+// ─── CONFETTI ───
+function fireConfetti() {
+  const c = document.getElementById('confetti-container');
+  c.innerHTML = '';
+  const colors = ['#D4A843','#F5D78E','#E05050','#50C878','#5080E0','#fff'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${Math.random()*100}%;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${6+Math.random()*8}px;
+      height: ${6+Math.random()*8}px;
+      border-radius: ${Math.random()>0.5?'50%':'2px'};
+      animation-delay: ${Math.random()*0.8}s;
+      animation-duration: ${2+Math.random()*1.5}s;
+    `;
+    c.appendChild(el);
+  }
+  setTimeout(() => c.innerHTML = '', 4000);
+}
+
+// ─── TOAST ───
+function toast(msg, type='info') {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
